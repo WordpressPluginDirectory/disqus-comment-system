@@ -128,6 +128,7 @@ class DisqusApi {
             `end=${endDate.toISOString()}`,
             `forum=${this.forum}`,
             'related=thread',
+            'order=asc',
             `limit=${Math.min(Math.max(limit, 1), 100)}`,
             `cursor=${cursor || ''}`,
         ].join('&');
@@ -354,7 +355,7 @@ class WordPressRestApi {
                         status: XHR.status,
                         statusText: XHR.statusText
                     });
-                    console.error('Error', XHR.statusText);
+                    console.error('Error Status: ', XHR.statusText, '100 character server response preview: ', XHR.responseText.substring(0, 100));
                 }
             };
             XHR.send(data);
@@ -1047,14 +1048,14 @@ const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 const ManualSyncForm = (props) => {
     return (React.createElement("form", { name: 'manual-sync', method: 'POST', onSubmit: props.onSubmitManualSyncForm },
         React.createElement("h4", null, "Manually Sync Comments"),
-        React.createElement("p", { className: 'description' }, "Select a time range to sync past comments. Date ranges are limited to a maximum of 12 months."),
+        React.createElement("p", { className: 'description' }, "Select a time range to sync past comments. Date ranges can go up to a maximum of 5 years."),
         React.createElement("table", { className: 'form-table' },
             React.createElement("tbody", null,
                 React.createElement("tr", null,
                     React.createElement("th", { scope: 'row' },
                         React.createElement("label", { htmlFor: 'manualSyncRangeStart' }, "Start Date")),
                     React.createElement("td", null,
-                        React.createElement("input", { type: 'date', id: 'manualSyncRangeStart', name: 'manualSyncRangeStart', className: 'regular-text', value: props.data.manualSyncRangeStart, onChange: props.onDateSelectorInputchange.bind(null, 'manualSyncRangeStart'), max: props.data.manualSyncRangeEnd, min: moment(props.data.manualSyncRangeEnd).subtract(12, 'months').format('YYYY-MM-DD'), disabled: props.data.isManualSyncRunning }),
+                        React.createElement("input", { type: 'date', id: 'manualSyncRangeStart', name: 'manualSyncRangeStart', className: 'regular-text', value: props.data.manualSyncRangeStart, onChange: props.onDateSelectorInputchange.bind(null, 'manualSyncRangeStart'), max: props.data.manualSyncRangeEnd, min: moment(props.data.manualSyncRangeEnd).subtract(60, 'months').format('YYYY-MM-DD'), disabled: props.data.isManualSyncRunning }),
                         React.createElement("p", { className: 'description' }, "The start date for the manual sync"))),
                 React.createElement("tr", null,
                     React.createElement("th", { scope: 'row' },
@@ -1666,7 +1667,7 @@ const valueFromInput = (element) => {
 };
 let syncedComments = 0;
 let totalSyncedComments = 0;
-const syncComments = (commentQueue, dispatch) => __awaiter(this, void 0, void 0, function* () {
+const syncComments = (commentQueue, dispatch, commentType) => __awaiter(this, void 0, void 0, function* () {
     // We need to throttle the amount of parallel sync requests that we make
     // because large forums could be syncing thousands of comments
     const maxParallelRequests = 100;
@@ -1688,6 +1689,8 @@ const syncComments = (commentQueue, dispatch) => __awaiter(this, void 0, void 0,
         }).then(() => {
             parallelRequests.splice(parallelRequests.indexOf(requestPromise), 1);
             syncedComments += 1;
+        }).catch(() => {
+            console.error('could not sync comment: ', comment);
         });
         parallelRequests.push(requestPromise);
         // If the number of parallel requests matches our limit, wait for one
@@ -1696,12 +1699,14 @@ const syncComments = (commentQueue, dispatch) => __awaiter(this, void 0, void 0,
             yield Promise.race(parallelRequests);
         }
     }
-    // Wait for all of the requests to finish
     Promise.all(parallelRequests).then(() => {
-        dispatch(actions_1.setValueAction('isManualSyncRunning', false));
+        // We sync parent comments first then child comments immediately after, so we only update the state of the sync after child comments
+        if (commentType === 'childComments') {
+            dispatch(actions_1.setValueAction('isManualSyncRunning', false));
+        }
         dispatch(actions_1.updateSyncStatusAction({
             is_manual: true,
-            progress_message: `Complete (${syncedComments} of ${totalSyncedComments})`,
+            progress_message: `Completed (${syncedComments} of ${totalSyncedComments})`,
         }));
     });
 });
@@ -1752,7 +1757,8 @@ const mapDispatchToProps = (dispatch) => {
             const startDate = getDateFromInput(rangeStartInput);
             const endDate = getDateFromInput(rangeEndInput);
             // Create a queue of comments within the provided date-range from the Disqus API
-            let commentQueue = [];
+            const parentCommentList = [];
+            const childCommentList = [];
             const getDisqusComments = (cursor = '') => __awaiter(this, void 0, void 0, function* () {
                 return new Promise((resolve, reject) => {
                     DisqusApi_1.DisqusApi.instance.listPostsForForum(cursor, startDate, endDate, 100, (xhr) => __awaiter(this, void 0, void 0, function* () {
@@ -1776,20 +1782,31 @@ const mapDispatchToProps = (dispatch) => {
                         const pendingComments = disqusData.response;
                         totalSyncedComments += pendingComments.length;
                         pendingComments.forEach((comment) => {
-                            commentQueue.push(comment);
+                            if (comment.parent) {
+                                childCommentList.push(comment);
+                            }
+                            else {
+                                parentCommentList.push(comment);
+                            }
                         });
                         const nextCursor = disqusData.cursor;
                         if (nextCursor && nextCursor.hasNext) {
                             yield getDisqusComments(nextCursor.next);
                         }
-                        resolve(commentQueue);
+                        resolve([parentCommentList, childCommentList]);
                     }));
                 });
             });
             dispatch(actions_1.setValueAction('isManualSyncRunning', true));
-            getDisqusComments().then((commentQueue) => {
-                syncComments(commentQueue, dispatch);
-            }).catch((err) => {
+            getDisqusComments()
+                .then((commentQueue) => {
+                syncComments(commentQueue[0], dispatch, 'parentComments');
+                return commentQueue;
+            })
+                .then((commentQueue) => {
+                syncComments(commentQueue[1], dispatch, 'childComments');
+            })
+                .catch((err) => {
                 dispatch(actions_1.setMessageAction({
                     onDismiss: handleClearMessage,
                     text: (err && err.response) || 'Error connecting to the Disqus API',
@@ -60883,4 +60900,4 @@ module.exports = function(module) {
 /***/ })
 
 /******/ });
-//# sourceMappingURL=en.disqus-admin.bundle.3.0.23.js.map
+//# sourceMappingURL=en.disqus-admin.bundle.3.0.24.1.js.map
