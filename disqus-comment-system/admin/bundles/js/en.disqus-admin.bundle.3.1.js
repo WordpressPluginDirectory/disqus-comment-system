@@ -564,6 +564,7 @@ const utils_1 = __webpack_require__(/*! ../utils */ "./frontend/src/ts/utils.ts"
 const HelpResources_1 = __webpack_require__(/*! ./HelpResources */ "./frontend/src/ts/components/HelpResources.tsx");
 const SupportLinks_1 = __webpack_require__(/*! ./SupportLinks */ "./frontend/src/ts/components/SupportLinks.tsx");
 const WelcomePanel_1 = __webpack_require__(/*! ./WelcomePanel */ "./frontend/src/ts/components/WelcomePanel.tsx");
+const WhatsNew_1 = __webpack_require__(/*! ./WhatsNew */ "./frontend/src/ts/components/WhatsNew.tsx");
 const getSSOContainer = (props) => {
     const adminOptions = props.data.adminOptions;
     if (!adminOptions.disqus_public_key || !adminOptions.disqus_secret_key || !adminOptions.disqus_installed) {
@@ -676,6 +677,7 @@ const getActiveTabView = (props) => {
     }
 };
 const Admin = (props) => (React.createElement("div", null,
+    React.createElement(WhatsNew_1.default, null),
     props.data.adminOptions.disqus_installed ? React.createElement(WelcomePanel_1.default, { shortname: props.data.adminOptions.disqus_forum_url }) : null,
     React.createElement(AdminTabBar, Object.assign({}, props)),
     getActiveTabView(props)));
@@ -797,7 +799,12 @@ exports.default = ExportComments;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-const HelpResources = () => (React.createElement("ul", null,
+const HelpResources = () => (React.createElement("ul", { className: 'description' },
+    React.createElement("li", null,
+        React.createElement("p", null,
+            "In addition to our free-to-use, ad-supported Basic plan, we also offer ad-optional subscription plans that come with more advanced features and access to priority support. Please see our ",
+            React.createElement("a", { href: 'https://disqus.com/pricing/', target: '_blank' }, "pricing page"),
+            " for more details.")),
     React.createElement("li", null,
         React.createElement("a", { href: 'https://status.disqus.com/', target: '_blank' }, "Disqus System Status")),
     React.createElement("li", null,
@@ -1385,7 +1392,7 @@ const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 const utils_1 = __webpack_require__(/*! ../utils */ "./frontend/src/ts/utils.ts");
 const WelcomePanel = (props) => (React.createElement("div", { className: 'welcome-panel' },
     React.createElement("div", { className: 'welcome-panel-content' },
-        React.createElement("p", { className: 'about-description' }, "Manage Community"),
+        React.createElement("p", { className: 'about-description' }, "Manage Your Community"),
         React.createElement("div", { className: 'welcome-panel-column-container' },
             React.createElement("div", { className: 'welcome-panel-column' },
                 React.createElement("h3", null, "Comments"),
@@ -1395,7 +1402,7 @@ const WelcomePanel = (props) => (React.createElement("div", { className: 'welcom
                     React.createElement("li", null,
                         React.createElement("a", { className: 'welcome-icon dashicons-warning', href: utils_1.getForumAdminUrl(props.shortname, 'access/banned'), target: '_blank' }, "Banned Users")),
                     React.createElement("li", null,
-                        React.createElement("a", { className: 'welcome-icon dashicons-filter', href: utils_1.getForumAdminUrl(props.shortname, 'settings/access'), target: '_blank' }, "Restricted Words Filter")),
+                        React.createElement("a", { className: 'welcome-icon dashicons-filter', href: utils_1.getForumAdminUrl(props.shortname, 'settings/access'), target: '_blank' }, "Restricted Words")),
                     React.createElement("li", null,
                         React.createElement("a", { className: 'welcome-icon dashicons-admin-users', href: utils_1.getForumAdminUrl(props.shortname, 'settings/moderators'), target: '_blank' }, "Site Moderators")))),
             React.createElement("div", { className: 'welcome-panel-column' },
@@ -1415,8 +1422,45 @@ const WelcomePanel = (props) => (React.createElement("div", { className: 'welcom
                     React.createElement("li", null,
                         React.createElement("a", { className: 'welcome-icon dashicons-format-chat', href: utils_1.getForumAdminUrl(props.shortname, 'settings/community'), target: '_blank' }, "Community Rules")),
                     React.createElement("li", null,
-                        React.createElement("a", { className: 'welcome-icon dashicons-admin-settings', href: utils_1.getForumAdminUrl(props.shortname, 'settings/advanced'), target: '_blank' }, "Advanced"))))))));
+                        React.createElement("a", { className: 'welcome-icon dashicons-admin-settings', href: utils_1.getForumAdminUrl(props.shortname, 'settings/advanced'), target: '_blank' }, "Advanced")),
+                    React.createElement("li", null,
+                        React.createElement("a", { className: 'welcome-icon dashicons-align-left', href: utils_1.getForumAdminUrl(props.shortname, 'settings/ads'), target: '_blank' }, "Remove Ads"))))))));
 exports.default = WelcomePanel;
+
+
+/***/ }),
+
+/***/ "./frontend/src/ts/components/WhatsNew.tsx":
+/*!*************************************************!*\
+  !*** ./frontend/src/ts/components/WhatsNew.tsx ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+const latestVersion = '3.1';
+const updates = [
+    'The Disqus Embed will now render properly on sites using WordPress Block Themes in addition to Classic Themes',
+    'A refreshed UI for the Disqus plugin admin panel',
+    'Robust improvements to manual and automatic syncing: multiple bug fixes and increased allowable manual syncing data range',
+    'More informative error messaging in the browser console and plugin UI when encountering issues with manual and automatic syncing for easier troubleshooting'
+];
+const WhatsNew = () => {
+    const [showWhatsNew, setShowWhatsNew] = React.useState(false);
+    const handleClick = () => {
+        setShowWhatsNew(!showWhatsNew);
+    };
+    return (React.createElement("div", { className: `whats-new${showWhatsNew ? ' visible' : ''}` },
+        React.createElement("button", { className: 'button', onClick: handleClick }, showWhatsNew ? 'Hide' : `What's New in v${latestVersion}?`),
+        React.createElement("div", { className: `${showWhatsNew ? '' : ' hidden'}` },
+            React.createElement("ul", null, updates.map((update, index) => React.createElement("li", { key: index },
+                "- ",
+                update))))));
+};
+exports.default = WhatsNew;
 
 
 /***/ }),
@@ -60900,4 +60944,4 @@ module.exports = function(module) {
 /***/ })
 
 /******/ });
-//# sourceMappingURL=en.disqus-admin.bundle.3.0.24.1.js.map
+//# sourceMappingURL=en.disqus-admin.bundle.3.1.js.map
