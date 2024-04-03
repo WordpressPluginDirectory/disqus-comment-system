@@ -1441,7 +1441,7 @@ exports.default = WelcomePanel;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-const latestVersion = '3.1';
+const latestVersion = '3.1.1';
 const updates = [
     'The Disqus Embed will now render properly on sites using WordPress Block Themes in addition to Classic Themes',
     'A refreshed UI for the Disqus plugin admin panel',
@@ -60944,4 +60944,4 @@ module.exports = function(module) {
 /***/ })
 
 /******/ });
-//# sourceMappingURL=en.disqus-admin.bundle.3.1.js.map
+//# sourceMappingURL=en.disqus-admin.bundle.3.1.1.js.map
