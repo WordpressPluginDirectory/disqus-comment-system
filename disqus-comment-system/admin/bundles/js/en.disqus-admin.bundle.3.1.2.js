@@ -1390,6 +1390,7 @@ exports.default = SyncTokenForm;
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 const utils_1 = __webpack_require__(/*! ../utils */ "./frontend/src/ts/utils.ts");
+const links_1 = __webpack_require__(/*! ../constants/links */ "./frontend/src/ts/constants/links.tsx");
 const WelcomePanel = (props) => (React.createElement("div", { className: 'welcome-panel' },
     React.createElement("div", { className: 'welcome-panel-content' },
         React.createElement("p", { className: 'about-description' }, "Manage Your Community"),
@@ -1405,6 +1406,13 @@ const WelcomePanel = (props) => (React.createElement("div", { className: 'welcom
                         React.createElement("a", { className: 'welcome-icon dashicons-filter', href: utils_1.getForumAdminUrl(props.shortname, 'settings/access'), target: '_blank' }, "Restricted Words")),
                     React.createElement("li", null,
                         React.createElement("a", { className: 'welcome-icon dashicons-admin-users', href: utils_1.getForumAdminUrl(props.shortname, 'settings/moderators'), target: '_blank' }, "Site Moderators")))),
+            React.createElement("div", { className: 'welcome-panel-column' },
+                React.createElement("h3", null, "Polls"),
+                React.createElement("ul", null,
+                    React.createElement("li", null,
+                        React.createElement("a", { className: 'welcome-icon dashicons-welcome-write-blog', href: links_1.pollsBlogPost, target: '_blank' }, "Learn More")),
+                    React.createElement("li", null,
+                        React.createElement("a", { className: 'welcome-icon dashicons-welcome-widgets-menus', href: links_1.pricingPolls, target: '_blank' }, "Get Started")))),
             React.createElement("div", { className: 'welcome-panel-column' },
                 React.createElement("h3", null, "Analytics"),
                 React.createElement("ul", null,
@@ -1441,12 +1449,10 @@ exports.default = WelcomePanel;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-const latestVersion = '3.1.1';
+const links_1 = __webpack_require__(/*! ../constants/links */ "./frontend/src/ts/constants/links.tsx");
+const latestVersion = '3.1.2';
 const updates = [
-    'The Disqus Embed will now render properly on sites using WordPress Block Themes in addition to Classic Themes',
-    'A refreshed UI for the Disqus plugin admin panel',
-    'Robust improvements to manual and automatic syncing: multiple bug fixes and increased allowable manual syncing data range',
-    'More informative error messaging in the browser console and plugin UI when encountering issues with manual and automatic syncing for easier troubleshooting'
+    'Disqus Polls is now live! Engage your audiences with interactive polls, and seamlessly install them on your site.'
 ];
 const WhatsNew = () => {
     const [showWhatsNew, setShowWhatsNew] = React.useState(false);
@@ -1456,11 +1462,28 @@ const WhatsNew = () => {
     return (React.createElement("div", { className: `whats-new${showWhatsNew ? ' visible' : ''}` },
         React.createElement("button", { className: 'button', onClick: handleClick }, showWhatsNew ? 'Hide' : `What's New in v${latestVersion}?`),
         React.createElement("div", { className: `${showWhatsNew ? '' : ' hidden'}` },
-            React.createElement("ul", null, updates.map((update, index) => React.createElement("li", { key: index },
-                "- ",
-                update))))));
+            React.createElement("ul", null,
+                updates.map((update, index) => React.createElement("li", { key: index }, update)),
+                React.createElement("li", null,
+                    React.createElement("a", { href: links_1.pricingPolls, key: 'pricing-link' }, "Get started with Disqus Polls today"))))));
 };
 exports.default = WhatsNew;
+
+
+/***/ }),
+
+/***/ "./frontend/src/ts/constants/links.tsx":
+/*!*********************************************!*\
+  !*** ./frontend/src/ts/constants/links.tsx ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.pricingPolls = 'https://disqus.com/pricing/?product=polls';
+exports.pollsBlogPost = 'https://blog.disqus.com/disqus-polls-are-here-and-available-to-all-publishers';
 
 
 /***/ }),
@@ -60944,4 +60967,4 @@ module.exports = function(module) {
 /***/ })
 
 /******/ });
-//# sourceMappingURL=en.disqus-admin.bundle.3.1.1.js.map
+//# sourceMappingURL=en.disqus-admin.bundle.3.1.2.js.map
